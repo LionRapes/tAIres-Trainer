@@ -23,7 +23,7 @@ from taires.utils.metrics import build_telemetry_payload, compute_metrics
 logger = logging.getLogger(__name__)
 
 
-def train(config: TrainConfig) -> TrainingTelemetry:
+def train(config: TrainConfig, callbacks: list | None = None) -> TrainingTelemetry:
     """Execute model training pipeline using parameters from TrainConfig."""
     if not config.data_path.is_file():
         raise FileNotFoundError(
@@ -103,6 +103,7 @@ def train(config: TrainConfig) -> TrainingTelemetry:
         eval_dataset=val_dataset,
         data_collator=data_collator,
         compute_metrics=compute_metrics,
+        callbacks=callbacks,
     )
     logger.info("Executing model training...")
     trainer.train()

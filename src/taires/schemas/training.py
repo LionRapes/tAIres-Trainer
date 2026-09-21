@@ -5,16 +5,6 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class PairSample(BaseModel):
-    """Data integrity schema for validating raw dataset entries."""
-
-    model_config = ConfigDict(str_strip_whitespace=True)
-
-    text1: str = Field(..., min_length=1)
-    text2: str = Field(..., min_length=1)
-    label: int = Field(..., ge=0, le=1)
-
-
 class TrainConfig(BaseModel):
     """Training pipeline and hyperparameters configuration."""
 
