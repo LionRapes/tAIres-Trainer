@@ -10,6 +10,7 @@ from taires.ui.common import (
     load_json,
     load_s3_config,
     render_evaluation_curves,
+    render_training_dynamics,
     save_s3_config,
     upload_to_s3,
 )
@@ -41,7 +42,7 @@ if meta:
         val = metrics.get(key, meta.get("decision_threshold") if key == "optimal_threshold" else 0)
         col.metric(label, f"{val:.4f}")
 
-    t1, t2, t3 = st.tabs(["Curves", "Confusion Matrix", "Automated Tests"])
+    t1, t2, t3, t4 = st.tabs(["Curves", "Confusion Matrix", "Automated Tests", "Training Dynamics"])
 
     with t1:
         if tlm and "curves" in tlm:
@@ -62,6 +63,11 @@ if meta:
             accuracy_pct = tests.get("accuracy", 0) * 100
             st.success(f"Passed: {tests.get('passed_tests')}/{tests.get('total_tests')} ({accuracy_pct:.1f}%)")
             st.dataframe(pd.DataFrame(tests.get("results", [])), width="stretch")
+    with t4:
+        if tlm and "training_history" in tlm:
+            render_training_dynamics(tlm["training_history"])
+        else:
+            st.info("Training history (checkpoints log) was not saved in this model version.")
 
     st.divider()
     

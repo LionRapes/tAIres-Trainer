@@ -28,7 +28,7 @@ def create_model_version(
 
     bundle_name = f"{name.strip()}-{version.strip()}"
     versions_root_path = Path(versions_root)
-    version_dir = Path(versions_root) / bundle_name
+    version_dir = versions_root_path / bundle_name
 
     if version_dir.exists():
         raise FileExistsError(f"Version directory '{version_dir.resolve()}' already exists.")
@@ -78,10 +78,9 @@ def create_model_version(
         json.dump(metadata.model_dump(mode="json"), f, indent=2)
 
     logger.info("Creating version archive (%s)...", archive_format)
-    archive_base_path = versions_root_path / bundle_name
     archive_file_path = Path(
         shutil.make_archive(
-            base_name=str(archive_base_path),
+            base_name=str(version_dir),
             format=archive_format,
             root_dir=str(versions_root_path),
             base_dir=bundle_name,

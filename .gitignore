@@ -3,4 +3,5 @@ poetry.lock
 .vscode
 *cache*
 versions
+uploads
 .s3_config.json

@@ -17,13 +17,11 @@ except ImportError:
     BOTO3_AVAILABLE = False
     ClientError = Exception
 
-# --- DIRECTORY CONFIGURATION ---
 VERSIONS_DIR = Path("versions")
 UPLOAD_DIR = Path("uploads")
 VERSIONS_DIR.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# --- CLOUD CONFIGURATION ---
 S3_CONFIG_FILE = Path(".s3_config.json")
 
 
@@ -76,6 +74,54 @@ def get_cached_predictor(model_dir_str: str) -> TirePredictor:
     """Cache model instance to prevent VRAM reallocation."""
     return TirePredictor(Path(model_dir_str))
 
+
+def render_training_dynamics(history: dict[str, Any]) -> None:
+    """Plot Training Dynamics (Loss) to identify overfitting points."""
+    if not history or not history.get("full_log"):
+        st.info("No training history available for this version.")
+        return
+
+    import pandas as pd
+    import plotly.graph_objects as go
+    import streamlit as st
+
+    df = pd.DataFrame(history["full_log"])
+
+    train_df = df.dropna(subset=["loss"])[["step", "loss"]]
+    eval_df = df.dropna(subset=["eval_loss"])[["step", "eval_loss"]]
+    
+    fig = go.Figure()
+    
+    if not train_df.empty:
+        fig.add_trace(go.Scatter(
+            x=train_df["step"], 
+            y=train_df["loss"], 
+            mode="lines", 
+            name="Train Loss", 
+            line={"color": "#3B82F6", "width": 2},
+            connectgaps=True
+        ))
+        
+    if not eval_df.empty:
+        fig.add_trace(go.Scatter(
+            x=eval_df["step"], 
+            y=eval_df["eval_loss"], 
+            mode="lines+markers", 
+            name="Eval Loss", 
+            line={"color": "#EF4444", "width": 2},
+            marker={"size": 8},
+            connectgaps=True
+        ))
+    
+    fig.update_layout(
+        title="Training vs Validation Loss",
+        xaxis_title="Steps",
+        yaxis_title="Loss",
+        margin={"l": 0, "r": 0, "t": 40, "b": 0},
+        height=350,
+    )
+    st.plotly_chart(fig, width="stretch")
+        
 
 @st.cache_data(ttl=3600)
 def search_huggingface_models(query: str) -> list[str]:

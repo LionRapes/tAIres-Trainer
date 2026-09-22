@@ -39,18 +39,24 @@ with st.form("train_form", border=False):
 
     st.divider()
 
-    st.subheader("3. Hyperparameters")
-    c_hyp1, c_hyp2 = st.columns(2)
+    st.subheader("3. Hyperparameters & Configuration")
+    c_hyp1, c_hyp2, c_hyp3 = st.columns(3)
 
     with c_hyp1:
         epochs = st.number_input("Epochs", 1, 20, 3)
-        batch = st.number_input("Batch Size", 4, 128, 32)
-        lr = st.number_input("Learning Rate", value=5e-5, format="%.6f")
-
+        batch = st.number_input("Train Batch Size", 4, 128, 32)
+        eval_batch = st.number_input("Eval Batch Size", 4, 128, 32)
+        
     with c_hyp2:
+        lr = st.number_input("Learning Rate", value=5e-5, format="%.6f")
+        weight_decay = st.number_input("Weight Decay", value=0.01, format="%.4f")
+        max_length = st.number_input("Max Token Length", 16, 512, 64)
+
+    with c_hyp3:
+        test_size = st.slider("Validation Split (Test Size)", 0.05, 0.5, 0.15, 0.05)
+        random_state = st.number_input("Random State (Seed)", 0, 1000, 42)
         arch = st.selectbox("Archive Format", ["zip", "tar"])
-        st.markdown("<br>", unsafe_allow_html=True)
-        clean = st.checkbox("Remove unpacked folder after archiving", value=False)
+        clean = st.checkbox("Remove unpacked folder", value=False)
 
     st.write("")
     submitted = st.form_submit_button("Run Training Pipeline", width="stretch")
@@ -69,14 +75,20 @@ if submitted:
         st_logs = st.empty()
         st_callback = StreamlitTrainingCallback(st_progress, st_logs)
 
-        with st.spinner(f"Training on base model {base_model}..."):
+        ene = st.spinner(f"Training on base model {base_model}...")
+        with ene:
             try:
                 cfg = TrainConfig(
                     data_path=data_file,
                     model_name=base_model,
                     num_train_epochs=epochs,
                     per_device_train_batch_size=batch,
+                    per_device_eval_batch_size=eval_batch,
                     learning_rate=lr,
+                    weight_decay=weight_decay,
+                    max_length=max_length,
+                    test_size=test_size,
+                    random_state=random_state,
                 )
                 out = create_model_version(
                     config=cfg,

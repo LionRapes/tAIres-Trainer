@@ -4,8 +4,8 @@ from pathlib import Path
 import pandas as pd
 import torch
 import torch.nn.functional as F
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
+from taires.ml.inference import TirePredictor
 from taires.schemas.training import AutomatedTestsReport, TestSampleResult
 
 logger = logging.getLogger(__name__)
@@ -75,10 +75,7 @@ def run_automated_tests(
     if not test_suite:
         raise ValueError("Test suite is empty.")
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    tokenizer = AutoTokenizer.from_pretrained(model_dir)
-    model = AutoModelForSequenceClassification.from_pretrained(model_dir).to(device)
-    model.eval()
+    predictor =  TirePredictor(model_dir)
 
     results: list[TestSampleResult] = []
     passed_count = 0
@@ -89,16 +86,16 @@ def run_automated_tests(
             texts1 = [c["text1"] for c in batch_cases]
             texts2 = [c["text2"] for c in batch_cases]
 
-            inputs = tokenizer(
+            inputs = predictor.tokenizer(
                 texts1,
                 texts2,
                 return_tensors="pt",
                 truncation=True,
                 padding=True,
                 max_length=64,
-            ).to(device)
+            ).to(predictor.device)
 
-            logits = model(**inputs).logits
+            logits = predictor.model(**inputs).logits
             probs = F.softmax(logits, dim=-1)[:, 1].cpu().numpy()
 
             for case, prob in zip(batch_cases, probs):

@@ -17,7 +17,11 @@ from transformers import (
 )
 
 from taires.ml.dataset import PairDataset
-from taires.schemas.training import TrainConfig, TrainingTelemetry
+from taires.schemas.training import (
+    TrainConfig,
+    TrainingHistoryPayload,
+    TrainingTelemetry,
+)
 from taires.utils.metrics import build_telemetry_payload, compute_metrics
 
 logger = logging.getLogger(__name__)
@@ -120,7 +124,16 @@ def train(config: TrainConfig, callbacks: list | None = None) -> TrainingTelemet
         predictions_output=predictions_output,
         log_history=trainer.state.log_history,
     )
-
+    
+    train_logs = [log for log in trainer.state.log_history if "loss" in log and "eval_loss" not in log]
+    eval_logs = [log for log in trainer.state.log_history if "eval_loss" in log]
+    
+    telemetry.training_history = TrainingHistoryPayload(
+        train=train_logs,
+        eval=eval_logs,
+        full_log=trainer.state.log_history
+    )
+    
     del trainer, model
     gc.collect()
     if torch.cuda.is_available():
