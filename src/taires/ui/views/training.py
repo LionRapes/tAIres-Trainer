@@ -11,7 +11,7 @@ from taires.ui.common import (
 
 st.title("Train New Model")
 
-local_models = [str(d / "model") for d in VERSIONS_DIR.iterdir() if (d / "model").exists()]
+local_models = [str(d / "model") for d in VERSIONS_DIR.iterdir() if (d / "model").exists()] if VERSIONS_DIR.exists() else []
 
 st.subheader("1. Base Model Configuration")
 c1_model, c2_model = st.columns([1, 2])

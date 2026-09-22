@@ -8,7 +8,6 @@ authors = [
 ]
 license = "MIT"
 dependencies = [
-    "torch>=2.0.0",
     "transformers>=4.36.0",
     "pandas>=2.0.0",
     "numpy>=1.24.0",
@@ -18,12 +17,21 @@ dependencies = [
     "pydantic (>=2.13.5,<3.0.0)",
     "streamlit (>=1.64.0,<2.0.0)",
     "plotly (>=7.1.0,<8.0.0)",
-    "torchvision (>=0.29.0,<0.30.0)",
     "boto3 (>=1.43.99,<2.0.0)",
 ]
 
 [tool.poetry]
 package-mode = false
+
+[tool.poetry.dependencies]
+torch = { version = ">=2.0.0", source = "pytorch" }
+torchvision = { version = ">=0.15.0", source = "pytorch" }
+torchaudio = { version = ">=0.15.0", source = "pytorch" }
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu126"
+priority = "explicit"
 
 [project.optional-dependencies]
 dev = [

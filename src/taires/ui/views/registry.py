@@ -16,6 +16,9 @@ from taires.ui.common import (
 )
 
 st.title("Model Registry")
+if not VERSIONS_DIR.exists():
+    VERSIONS_DIR.mkdir(parents=True, exist_ok=True)
+
 versions = [d.name for d in VERSIONS_DIR.iterdir() if d.is_dir() and not d.name.startswith(".")]
 
 if not versions:
@@ -71,7 +74,6 @@ if meta:
 
     st.divider()
     
-    # --- DEPLOYMENT WIDGET ---
     st.subheader("Deployment")
     
     if not BOTO3_AVAILABLE:

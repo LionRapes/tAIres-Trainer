@@ -77,13 +77,14 @@ def get_cached_predictor(model_dir_str: str) -> TirePredictor:
 
 def render_training_dynamics(history: dict[str, Any]) -> None:
     """Plot Training Dynamics (Loss) to identify overfitting points."""
+    import streamlit as st
+    
     if not history or not history.get("full_log"):
         st.info("No training history available for this version.")
         return
 
     import pandas as pd
     import plotly.graph_objects as go
-    import streamlit as st
 
     df = pd.DataFrame(history["full_log"])
 
